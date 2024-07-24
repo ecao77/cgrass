@@ -1,7 +1,7 @@
 import numpy as np
 
 def generate_points(num_plants=1):
-    if not (1 <= num_plants <= 5):
+    if not (1 <= num_plants <= 15):
         raise ValueError("Number of plants must be between 1 and 5.")
 
     # Generate 100 points evenly spaced between (0.05, 0.025) and (0.95, 0.025)
@@ -50,6 +50,21 @@ def save_targets(filename, num_plants, stiffness):
             if i < num_points - 1:
                 file.write("\n")
 
+def save_beams(filename, num_plants, stiffness, constant):
+    with open(filename, 'w') as file:
+        beam_entries = []
+        for i in range(num_plants):
+            start_id = 201 + i * 3
+            medium_id = 202 + i * 3
+            end_id = 203 + i * 3
+            beam_entries.append(f"{start_id} {medium_id} {end_id} {stiffness} {constant}")
+
+        file.write(f"{len(beam_entries)}\n")
+        for i, entry in enumerate(beam_entries):
+            file.write(entry)
+            if i < len(beam_entries) - 1:
+                file.write("\n")
+
 def main(num_plants=1):
     points = generate_points(num_plants)
     save_to_file("channel.vertex", points)
@@ -59,5 +74,9 @@ def main(num_plants=1):
     save_targets("channel.target", num_plants, 100000)
     print("Target file generated and saved to channel.target")
 
+    # Save beams with stiffness of 50000 and constant of 0
+    save_beams("channel.beam", num_plants, 50000, 0)
+    print("Beam file generated and saved to channel.beam")
+
 if __name__ == "__main__":
-    main(num_plants=3)  # Change this value to generate the desired number of plants
+    main(num_plants=15)  # Change this value to generate the desired number of plants

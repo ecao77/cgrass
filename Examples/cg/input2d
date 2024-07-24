@@ -14,7 +14,7 @@ rho = 1                 % Density (kg/m^3)
 % TEMPORAL INFORMATION %
 %
 Temporal_Information {
-Tfinal = 0.10           % Final time of simulation (s)
+Tfinal = 0.20           % Final time of simulation (s)
 dt = 5.0e-5             % Time-step (s)
 }
 
