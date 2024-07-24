@@ -1,0 +1,149 @@
+function Crustacean()
+
+%
+% Grid Parameters (MAKE SURE MATCHES IN input2d !!!)
+%
+Nx =  32;        % # of Eulerian Grid Pts. in x-Direction (MUST BE EVEN!!!)
+Ny =  32;        % # of Eulerian Grid Pts. in y-Direction (MUST BE EVEN!!!)
+Lx = 3.0;        % Length of Eulerian Grid in x-Direction
+Ly = 1.0;        % Length of Eulerian Grid in y-Direction
+
+% Immersed Structure Geometric / Dynamic Parameters %
+N = 2*Nx;        % Number of Lagrangian Pts. (2x resolution of Eulerian grid)
+ds_Rest = 0;     % Resting length of springs
+struct_name = 'shrimp'; % Name for .vertex, .spring, etc files.
+
+
+% Call function to construct geometry
+[x1,y1] = IB_Phase_1(Lx,Nx);
+Nb1 = length(x1);
+disp("Power Stroke Points: " + Nb1);
+
+% Plot Geometry to test BEFORE taking out pts.
+figure(1)
+plot(x1,y1,'r-'); hold on;
+plot(x1,y1,'*'); hold on;
+xlabel('x'); ylabel('y');
+axis square;
+
+please_Print_Vertices_To_File(x1,y1)
+
+% Prints .vertex file!
+print_Lagrangian_Vertices(x1,y1,struct_name);
+
+% Prints .target file!
+k_Target = 5e8;
+print_Lagrangian_Target_Pts(x1,k_Target,struct_name);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% FUNCTION: prints VERTEX points to a file called shrimp.vertex
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function print_Lagrangian_Vertices(xLag,yLag,struct_name)
+
+    N = length(xLag);
+
+    vertex_fid = fopen([struct_name '.vertex'], 'w');
+
+    fprintf(vertex_fid, '%d\n', N );
+
+    %Loops over all Lagrangian Pts.
+    for s = 1:N
+        X_v = xLag(s);
+        Y_v = yLag(s);
+        fprintf(vertex_fid, '%1.16e %1.16e\n', X_v, Y_v);
+    end
+
+    fclose(vertex_fid); 
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% FUNCTION: prints Target points to a file called shrimp.target
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function print_Lagrangian_Target_Pts(xLag,k_Target,struct_name)
+
+    N = length(xLag);
+
+    target_fid = fopen([struct_name '.target'], 'w');
+
+    fprintf(target_fid, '%d\n', N );
+
+    %Loops over all Lagrangian Pts.
+    for s = 1:108
+        fprintf(target_fid, '%d %1.16e\n', s, k_Target);
+    end
+
+    for s = 109:N
+        fprintf(target_fid, '%d %1.16e\n', s, k_Tar);
+    end
+
+    fclose(target_fid); 
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% FUNCTION: creates the initial Lagrangian structure geometry
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [xLag,yLag] = IB_Phase_1(Lx,Nx)
+
+struct_name1 = 'shrimp_leg1';
+[~, x1, y1] = read_Vertex_Points(struct_name1);
+struct_name2 = 'shrimp_leg2';
+[~, x2, y2] = read_Vertex_Points(struct_name2);
+struct_name3 = 'shrimp_leg3';
+[~, x3, y3] = read_Vertex_Points(struct_name3);
+struct_name4 = 'shrimp_leg4';
+[~, x4, y4] = read_Vertex_Points(struct_name4);
+struct_name5 = 'shrimp_body';
+[~, x5, y5] = read_Vertex_Points(struct_name5);
+
+
+xLag = [x1; x2; x3; x4; x5];
+yLag = [y1; y2; y3; y4; y5];
+N = length(xLag)/2;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% FUNCTION: prints all Vertices to File
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function please_Print_Vertices_To_File(X1,Y1)
+
+fileID = fopen('All_Positions.txt','w');
+for j=1:length(X1)
+    %fprintf(fileID,'%1.16e %1.16e %1.16e %1.16e\n', X1(j),Y1(j),X2(j),Y2(j) );
+    fprintf(fileID,'%1.16e %1.16e\n', X1(j),Y1(j) );
+
+end
+fclose(fileID);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% FUNCTION: Reads in the # of vertex pts and all the vertex pts from the
+%           .vertex file.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [N,xLag,yLag] = read_Vertex_Points(struct_name)
+
+filename = [struct_name '.vertex']; 
+fileID = fopen(filename);
+C = textscan(fileID,'%f %f','CollectOutput',1);
+fclose(fileID);   
+
+vertices = C{1};    %Stores all read in data in vertices (N+1,2) array
+
+N = vertices(1,1);  % # of Lagrangian Pts
+xLag = zeros(N,1);  % Initialize storage for Lagrangian Pts.
+yLag = xLag;        % Initialize storage for Lagrangian Pts.
+
+for i=1:N
+   xLag(i,1) = vertices(i+1,1); %Stores x-values of Lagrangian Mesh
+   yLag(i,1) = vertices(i+1,2); %Stores y-values of Lagrangian Mesh
+end
