@@ -2,20 +2,20 @@ import numpy as np
 
 def generate_points(num_plants=1):
     if not (1 <= num_plants <= 15):
-        raise ValueError("Number of plants must be between 1 and 5.")
+        raise ValueError("Number of plants must be between 1 and 15.")
 
     # Generate 100 points evenly spaced between (0.05, 0.025) and (0.95, 0.025)
-    x1 = np.linspace(0.05, 0.95, 100)
+    x1 = np.linspace(0.05, 1.95, 100)
     y1 = np.full_like(x1, 0.025)
     points1 = np.column_stack((x1, y1))
 
     # Generate 100 points evenly spaced between (0.05, 0.225) and (0.95, 0.225)
-    x3 = np.linspace(0.05, 0.95, 100)
+    x3 = np.linspace(0.05, 1.95, 100)
     y3 = np.full_like(x3, 0.225)
     points3 = np.column_stack((x3, y3))
 
     # Generate the plants
-    plant_positions = np.linspace(0.3, 0.7, num_plants)
+    plant_positions = np.linspace(0.5, 1.5, num_plants)
     plant_points = []
     for x in plant_positions:
         x_plant = np.full(3, x)
@@ -75,8 +75,8 @@ def main(num_plants=1):
     print("Target file generated and saved to channel.target")
 
     # Save beams with stiffness of 50000 and constant of 0
-    save_beams("channel.beam", num_plants, 50000, 0)
+    save_beams("channel.beam", num_plants, 10000, 0)
     print("Beam file generated and saved to channel.beam")
 
 if __name__ == "__main__":
-    main(num_plants=15)  # Change this value to generate the desired number of plants
+    main(num_plants = 5)  # Change this value to generate the desired number of plants
