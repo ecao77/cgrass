@@ -38,7 +38,7 @@ kStiff = 1e4;
 w = 0.2;
 
 % Max Velocity Desired
-uMax = 150.0; % originally 250.0
+uMax = 100.0; % originally 250.0
 
 if first == 1
     
