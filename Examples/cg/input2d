@@ -14,7 +14,7 @@ rho = 1                 % Density (kg/m^3)
 % TEMPORAL INFORMATION %
 %
 Temporal_Information {
-Tfinal = 0.10           % Final time of simulation (s) % originally 1.25
+Tfinal = 0.1           % Final time of simulation (s) % originally 1.25
 dt = 1.0e-5             % Time-step (s) % originally 5.0e-5
 }
 
@@ -62,7 +62,7 @@ user_force_model = 0    % 0 (for no) or 1 (for yes)
 % PRINTING INFORMATION
 %
 Output_Info {
-print_dump = 100          % How often to print (PLOT) to screen
+print_dump = 100          % How often to print (PLOT) to screen % originally 1000
 save_Vorticity = 1;      % Save Vorticity Scalar Data to .vtk format
 save_Pressure = 1;       % Save Pressure Scalar Data to .vtk format
 save_uVec = 1;           % Save u-Vector Data to .vtk format
