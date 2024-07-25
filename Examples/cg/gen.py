@@ -11,7 +11,7 @@ def generate_points(num_plants=1, num_wall_points=100):
 
     # Generate top wall points
     x_top = np.linspace(0.05, 1.95, num_wall_points)
-    y_top = np.full_like(x_top, 0.225)
+    y_top = np.full_like(x_top, 2.025) # used to be 0.225
     top_wall_points = np.column_stack((x_top, y_top))
 
     # Generate the plants (1 meter tall)
