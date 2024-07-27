@@ -38,7 +38,7 @@ kStiff = 1e4;
 w = 2.0; % used to be 0.2
 
 % Max Velocity Desired
-uMax = 100; % originally 250.0
+uMax = 40; % originally 250.0 and 100.0
 
 if first == 1
     
@@ -46,7 +46,7 @@ if first == 1
     xMin = 0.1;
     xMax = 0.16;
     yMin = 0.035;
-    yMax = 2.015; % used to be 0.215
+    yMax = 1.965; % used to be 0.215 used to be 2.015
     
     inds = give_Me_Indices_To_Apply_Force(x,y,xMin,xMax,yMin,yMax);
     first = 0;

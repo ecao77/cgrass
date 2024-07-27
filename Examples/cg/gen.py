@@ -11,7 +11,7 @@ def generate_points(num_plants=1, num_wall_points=100):
 
     # Generate top wall points
     x_top = np.linspace(0.05, 1.95, num_wall_points)
-    y_top = np.full_like(x_top, 2.025) # used to be 0.225
+    y_top = np.full_like(x_top, 1.975) # used to be 0.225 used to be 2.025
     top_wall_points = np.column_stack((x_top, y_top))
 
     # Generate the plants (1 meter tall)
@@ -71,11 +71,11 @@ def main(num_plants=1, num_wall_points=100):
     save_to_file("channel.vertex", points)
     print("Points generated and saved to channel.vertex")
 
-    save_targets("channel.target", num_plants, num_wall_points, 100000)
+    save_targets("channel.target", num_plants, num_wall_points, 1e8)
     print("Target file generated and saved to channel.target")
 
-    save_beams("channel.beam", num_plants, num_wall_points, 10000, 0)
+    save_beams("channel.beam", num_plants, num_wall_points, 5000, 0) # used to be 50000 or 500000
     print("Beam file generated and saved to channel.beam")
 
 if __name__ == "__main__":
-    main(num_plants=5, num_wall_points=100)  # Change these values as needed
+    main(num_plants=15, num_wall_points=100)  # Change these values as needed

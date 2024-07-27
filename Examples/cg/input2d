@@ -14,19 +14,19 @@ rho = 1                 % Density (kg/m^3)
 % TEMPORAL INFORMATION %
 %
 Temporal_Information {
-Tfinal = 0.1           % Final time of simulation (s) % originally 1.25
-dt = 1.0e-5             % Time-step (s) % originally 5.0e-5
+Tfinal = 0.1            % Final time of simulation (s) % originally 1.25 % then 0.1
+dt = 1.0e-5             % Time-step (s) % originally 5.0e-5 % then 1.0e-5
 }
 
 %
 % GRID PARAMETERS %
 %
 Grid_Parameters {
-Nx = 256                % # of Eulerian Grid Pts. in x-Direction (MUST BE EVEN!!!) % used to be 512
-Ny = 256                 % # of Eulerian Grid Pts. in y-Direction (MUST BE EVEN!!!) % used to be 128
-Lx = 2.0                % Length of Eulerian Grid in x-Direction (m) % used to be 1.0
-Ly = 2.0               % Length of Eulerian Grid in y-Direction (m)
-supp = 4                % Choose dirac-delta support (KEEP IT EVEN!!!)
+Nx = 64                  % # of Eulerian Grid Pts. in x-Direction (MUST BE EVEN!!!) % used to be 512
+Ny = 64                  % # of Eulerian Grid Pts. in y-Direction (MUST BE EVEN!!!) % used to be 128
+Lx = 2.0                 % Length of Eulerian Grid in x-Direction (m) % used to be 1.0
+Ly = 2.0                 % Length of Eulerian Grid in y-Direction (m)
+supp = 4                 % Choose dirac-delta support (KEEP IT EVEN!!!)
 }
 
 %
