@@ -38,13 +38,13 @@ kStiff = 1e4;
 w = 2.0; % used to be 0.2
 
 % Max Velocity Desired
-uMax = 40; % originally 250.0 and 100.0
+uMax = 30; % originally 250.0 and 100.0
 
 if first == 1
     
     % Compute Where You Want to Apply Force
     xMin = 0.1;
-    xMax = 0.16;
+    xMax = 0.15;
     yMin = 0.035;
     yMax = 1.965; % used to be 0.215 used to be 2.015
     

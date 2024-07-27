@@ -74,7 +74,7 @@ def main(num_plants=1, num_wall_points=100):
     save_targets("channel.target", num_plants, num_wall_points, 1e8)
     print("Target file generated and saved to channel.target")
 
-    save_beams("channel.beam", num_plants, num_wall_points, 5000, 0) # used to be 50000 or 500000
+    save_beams("channel.beam", num_plants, num_wall_points, 10000, 0) # used to be 50000 or 500000 or 5000 (for a long time)
     print("Beam file generated and saved to channel.beam")
 
 if __name__ == "__main__":
