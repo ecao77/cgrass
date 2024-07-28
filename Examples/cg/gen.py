@@ -1,8 +1,15 @@
 import numpy as np
 
-def generate_points(num_plants=1, num_wall_points=100):
+def generate_points(num_plants=1, num_wall_points=100, plant_heights=None):
     if not (1 <= num_plants <= 15):
         raise ValueError("Number of plants must be between 1 and 15.")
+    
+    if plant_heights is None:
+        plant_heights = [1.0] * num_plants  # Default height of 1 meter if not specified
+    elif isinstance(plant_heights, (int, float)):
+        plant_heights = [plant_heights] * num_plants  # Use the same height for all plants
+    elif len(plant_heights) != num_plants:
+        raise ValueError("The number of plant heights must match the number of plants.")
 
     # Generate bottom wall points
     x_bottom = np.linspace(0.05, 1.95, num_wall_points)
@@ -11,15 +18,15 @@ def generate_points(num_plants=1, num_wall_points=100):
 
     # Generate top wall points
     x_top = np.linspace(0.05, 1.95, num_wall_points)
-    y_top = np.full_like(x_top, 1.975) # used to be 0.225 used to be 2.025
+    y_top = np.full_like(x_top, 1.975)
     top_wall_points = np.column_stack((x_top, y_top))
 
-    # Generate the plants (1 meter tall)
+    # Generate the plants with variable heights
     plant_x_positions = np.linspace(0.5, 1.5, num_plants)
     plant_points = []
-    for x in plant_x_positions:
+    for x, height in zip(plant_x_positions, plant_heights):
         x_plant = np.full(3, x)
-        y_plant = np.linspace(0.025, 1.025, 3)  # 1 meter tall, starting from y=0.025
+        y_plant = np.linspace(0.025, 0.025 + height, 3)  # Variable height, starting from y=0.025
         plant_points.append(np.column_stack((x_plant, y_plant)))
     plant_points = np.vstack(plant_points)
 
@@ -66,16 +73,17 @@ def save_beams(filename, num_plants, num_wall_points, stiffness, constant):
             if i < len(beam_entries) - 1:
                 file.write("\n")
 
-def main(num_plants=1, num_wall_points=100):
-    points = generate_points(num_plants, num_wall_points)
+def main(num_plants=1, num_wall_points=100, plant_heights=None):
+    points = generate_points(num_plants, num_wall_points, plant_heights)
     save_to_file("channel.vertex", points)
     print("Points generated and saved to channel.vertex")
 
     save_targets("channel.target", num_plants, num_wall_points, 1e8)
     print("Target file generated and saved to channel.target")
 
-    save_beams("channel.beam", num_plants, num_wall_points, 10000, 0) # used to be 50000 or 500000 or 5000 (for a long time)
+    save_beams("channel.beam", num_plants, num_wall_points, 10000, 0)
     print("Beam file generated and saved to channel.beam")
 
 if __name__ == "__main__":
-    main(num_plants=10, num_wall_points=100)  # Change these values as needed
+    # Example usage with a single plant height for all plants
+    main(num_plants=7, num_wall_points=100, plant_heights=0.99)
