@@ -78,4 +78,4 @@ def main(num_plants=1, num_wall_points=100):
     print("Beam file generated and saved to channel.beam")
 
 if __name__ == "__main__":
-    main(num_plants=8, num_wall_points=100)  # Change these values as needed
+    main(num_plants=9, num_wall_points=100)  # Change these values as needed
