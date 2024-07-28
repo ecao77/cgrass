@@ -86,4 +86,4 @@ def main(num_plants=1, num_wall_points=100, plant_heights=None):
 
 if __name__ == "__main__":
     # Example usage with a single plant height for all plants
-    main(num_plants=7, num_wall_points=100, plant_heights=0.99)
+    main(num_plants=11, num_wall_points=100, plant_heights=0.67)
