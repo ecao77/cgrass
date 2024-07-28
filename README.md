@@ -1,4 +1,11 @@
-# File Structure
+# Cordgrass
+
+This repository contains the code for the cordgrass fluid simulation. The purpose of the simulation is 
+to model the movement of cordgrass under storm surge fluid flows, characterized by high fluid velocity
+and water levels, to compare the capabilities of different naturally occurring height-density combinations 
+of cordgrass meadows in salt marshes.
+
+### File Structure
 
 ```/Examples``` - sample simulations
 
