@@ -2,7 +2,7 @@
 %
 % IB2d is an Immersed Boundary Code (IB) for solving fully coupled non-linear 
 % 	fluid-structure interaction models. This version of the code is based off of
-%	Peskin's Immersed Boundary Method Paper in Acta Numerica, 2002.
+%	Peskins Immersed Boundary Method Paper in Acta Numerica, 2002.
 %
 % Author: Nicholas A. Battista
 % Email:  battistn[@]tcnj.edu
@@ -24,24 +24,24 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function Channel_Channel()
+function Channel_Channel(poroDensity, poroHeight)
 
 %------------------------------------------------------------------
 % Grid Parameters
 %   NOTE: (a) (Ny,Ly) are different in input2d 
 %         (b) These values below were used to initialize geometry
 %------------------------------------------------------------------
-Nx =  512;    % # of Eulerian Grid Pts. in x-Direction (MUST BE EVEN!!!)
-Ny =  512;    % # of Eulerian Grid Pts. in y-Direction (MUST BE EVEN!!!)
-Lx = 1.0;     % Length of Eulerian Grid in x-Direction used to be 1.0
-Ly = 1.0;     % Length of Eulerian Grid in y-Direction used to be 1.0
+Nx =  128;    % # of Eulerian Grid Pts. in x-Direction (MUST BE EVEN!!!) 512
+Ny =  16;    % # of Eulerian Grid Pts. in y-Direction (MUST BE EVEN!!!) 512
+Lx = 1.0;     % Length of Eulerian Grid in x-Direction
+Ly = 1.0;     % Length of Eulerian Grid in y-Direction
 
 %------------------------------------------------------------------
 % Immersed Structure Geometric / Dynamic Parameters %
 %------------------------------------------------------------------
-ds= 2.0*Lx/Nx;  % Lagrangian spacing used to be 0.5*Lx/Nx
-L = 10.0*Lx;     % Length of Channel % used to be 0.9
-w = 2.0*Ly;    % Width of Channel % used to be 0.15
+ds= 0.5*Lx/Nx;  % Lagrangian spacing used to be 0.5
+L = 0.9*Lx;     % Length of Channel
+w = 0.15*Ly;    % Width of Channel
 struct_name = 'channel'; % Name for .vertex, .spring, etc files.
 
 %------------------------------------------------------------------
@@ -53,7 +53,7 @@ yLag = yLag - 0.375;
 %------------------------------------------------------------------
 % Give me Poroelastic network
 %------------------------------------------------------------------
-[xPor, yPor, ind_1st, lenX, lenY] = give_Me_Poroelastic_Geometry(ds,L,w,Lx,Ly,yLag(1),xLag);
+[xPor, yPor, ind_1st, lenX, lenY] = give_Me_Poroelastic_Geometry(poroDensity, poroHeight, ds,L,w,Lx,Ly,yLag(1),xLag);
 
 %------------------------------------------------------------------
 % Plot Geometry (Testing)
@@ -73,15 +73,21 @@ print_Lagrangian_Vertices([xLag xPor],[yLag yPor],struct_name);
 %------------------------------------------------------------------
 % Prints .spring file!
 %------------------------------------------------------------------
-k_Spring = 5e6; % used to be 1e5
+k_Spring = 1e7; % used to be 1e5
 print_Lagrangian_Springs(xPor,yPor,xLag,yLag,k_Spring,ds,struct_name,ind_1st,lenX,lenY);
 
 %------------------------------------------------------------------
 % Prints .poroelastic file!
 %------------------------------------------------------------------
-alpha = 2000000;             % Brinkman coefficient % used to be 500000
+alpha = 5e8;             % Brinkman coefficient 500000
 offset = length(xLag);      % # of Channel pts before poroelastic pts in indexing
 print_Lagrangian_PoroElastic_Pts(xPor,struct_name,alpha,offset);
+
+%------------------------------------------------------------------
+% Prints .beam file!
+%------------------------------------------------------------------
+%k_Beam = 0.5; C = 0.0;
+%print_Lagrangian_Beams(xLag,yLag,k_Beam,C,struct_name);
 
 %------------------------------------------------------------------
 % Prints .target file!
@@ -160,6 +166,37 @@ function print_Lagrangian_Target_Pts(xLag,k_Target,struct_name)
 
     fclose(target_fid); 
     
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% FUNCTION: prints BEAM (Torsional Spring) points to a file called channel.beam
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function print_Lagrangian_Beams(xLag,yLag,k_Beam,C,struct_name)
+
+    % k_Beam: beam stiffness
+    % C: beam curvature
+    
+    N = length(xLag); % NOTE: Total number of beams = Number of Total Lag Pts. - 2
+
+    beam_fid = fopen([struct_name '.beam'], 'w');
+
+    fprintf(beam_fid, '%d\n', N );
+
+    %spring_force = kappa_spring*ds/(ds^2);
+
+    %BEAMS BETWEEN VERTICES
+    for s = 2:N-1
+            if  s <= N-1         
+                fprintf(beam_fid, '%d %d %d %1.16e %1.16e\n',s-1, s, s+1, k_Beam, C);  
+            else
+                %Case s=N
+                fprintf(beam_fid, '%d %d %d %1.16e %1.16e\n',s-1, s, 1,   k_Beam, C);  
+            end
+    end
+    fclose(beam_fid); 
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -169,7 +206,7 @@ function print_Lagrangian_Target_Pts(xLag,k_Target,struct_name)
 
 function print_Lagrangian_Springs(xPor,yPor,xLag,yLag,k_Spring,ds,struct_name,ind_1st,lenX,lenY)
 
-    N = lenY*(lenX-1)+lenX*(lenY);
+    N = lenX*(lenY);
     
     % FOR TESTING SET OFFSET=0 FOR LOGIC, YO!
     offset = length(xLag);       % Offset for total # of channel points (not poroelastic pts)s
@@ -177,8 +214,6 @@ function print_Lagrangian_Springs(xPor,yPor,xLag,yLag,k_Spring,ds,struct_name,in
     spring_fid = fopen([struct_name '.spring'], 'w');
 
     fprintf(spring_fid, '%d\n', N );
-
-    %spring_force = kappa_spring*ds/(ds^2);
 
     %SPRINGS BETWEEN VERTICES GOING VERTICAL!
     for i = 1:lenX                   % Loops over X
@@ -188,7 +223,18 @@ function print_Lagrangian_Springs(xPor,yPor,xLag,yLag,k_Spring,ds,struct_name,in
             
             if j==1
                 % Going vertical from channel -> 1st node
-                channel_ind = ind_1st + (i-1); % Index of channel attachments
+                channel_ind = ind_1st;
+                min_dist = abs(xLag(channel_ind) - xPor((i-1)*lenY+j));
+                for k = ind_1st+1:length(xLag)
+                    dist = abs(xLag(k) - xPor((i-1)*lenY+j));
+                    if dist < min_dist
+                        min_dist = dist;
+                        channel_ind = k;
+                    end
+                end
+                % disp(channel_ind + " " + s+j);
+                % disp( xLag(channel_ind) + " " + yLag(channel_ind));
+                % disp( xPor((i-1)*lenY+j) + " " + yPor((i-1)*lenY+j));
                 fprintf(spring_fid, '%d %d %1.16e %1.16e\n', channel_ind, s+j, k_Spring, ds);
             else
                 % Going Vertical off first node off channel
@@ -197,19 +243,6 @@ function print_Lagrangian_Springs(xPor,yPor,xLag,yLag,k_Spring,ds,struct_name,in
             
         end
     end
-    
-    %SPRINGS BETWEEN VERTICES GOING HORIZONTAL!
-    for i = 1:lenY               % Loops over Y
-        for j=1:lenX-1           % Loops over X
-            
-            s1 = 1 + (j-1)*lenY + (i-1) + offset; % Gives LEFT index
-            s2 = 1 +   (j)*lenY + (i-1) + offset; % Gives RIGHT index
-            
-            fprintf(spring_fid, '%d %d %1.16e %1.16e\n', s1, s2, k_Spring, ds);  
-            
-        end
-    end
-    fclose(spring_fid); 
     
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -235,16 +268,15 @@ yLag = [yBot*ones(1,length(x)) yTop*ones(1,length(x))];
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [xPor, yPor, ind_1st, lenX, lenY] = give_Me_Poroelastic_Geometry(ds,L,w,Lx,Ly,yBottom,xLag)
+function [xPor, yPor, ind_1st, lenX, lenY] = give_Me_Poroelastic_Geometry(poroDensity, poroHeight, ds,L,w,Lx,Ly,yBottom,xLag)
 
 % X CHANNEL PTS: x = (Lx-L)/2:ds:(L+(Lx-L)/2);  %xPts
 
-xStart = 4.5;  xFinish = 5.5; % used to be 0.45 to 0.55.
-poroHeight = 0.688; % we can customize this. used to be w/5. it doesn't matter, but we can do......
-poroDensity = 10; % new line by the way
+xStart = 0.45;  xFinish = 0.55;
+% poroHeight = w/2.103;
 % xVals = xStart:ds:xFinish;
 xVals = linspace(xStart, xFinish, poroDensity);
-yVals = yBottom+ds:ds:yBottom+poroHeight;
+yVals = yBottom+ds:ds:yBottom+poroHeight; % normally ds
 
 % Finds first index for spring attachment :)
 not_found = 1; i=0;
@@ -279,10 +311,3 @@ for i=1:lenX
         n=n+1;
     end
 end
-
-% TEST ORDER!
-%for i=1:lenX*lenY
-%   plot(xPor(i),yPor(i),'*'); hold on;
-%   pause(0.1);
-%end
-

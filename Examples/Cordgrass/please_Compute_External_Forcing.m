@@ -1,3 +1,28 @@
+%-------------------------------------------------------------------------------------------------------------------%
+%
+% IB2d is an Immersed Boundary Code (IB) for solving fully coupled non-linear 
+% 	fluid-structure interaction models. This version of the code is based off of
+%	Peskins Immersed Boundary Method Paper in Acta Numerica, 2002.
+%
+% Author: Nicholas A. Battista
+% Email:  nick.battista@unc.edu
+% Date Created: May 27th, 2015
+% Institution: UNC-CH
+%
+% This code is capable of creating Lagrangian Structures using:
+% 	1. Springs
+% 	2. Beams (*torsional springs)
+% 	3. Target Points
+%	4. Muscle-Model (combined Force-Length-Velocity model, "HIll+(Length-Tension)")
+%
+% One is able to update those Lagrangian Structure parameters, e.g., spring constants, resting %%	lengths, etc
+% 
+% There are a number of built in Examples, mostly used for teaching purposes. 
+% 
+% If you would like us %to add a specific muscle model, please let Nick (nick.battista@unc.edu) know.
+%
+%--------------------------------------------------------------------------------------------------------------------%
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % FUNCTION: Computes the components of the force term in Navier-Stokes from
@@ -31,22 +56,23 @@ Nb =    grid_Info(8); % # of Lagrangian pts.
 ds =    grid_Info(9); % Lagrangian spacing
 
 
+
 % Stiffness for Arbitrary External Force to Fluid Grid
 kStiff = 1e4;
 
 % Width of Channel
-w = 2.0; % used to be 0.2
+w = 0.15;
 
 % Max Velocity Desired
-uMax = 30; % originally 250.0 and 100.0
+uMax = 3.0;
 
 if first == 1
     
     % Compute Where You Want to Apply Force
     xMin = 0.1;
-    xMax = 0.15;
-    yMin = 0.035;
-    yMax = 1.965; % used to be 0.215 used to be 2.015
+    xMax = 0.16;
+    yMin = 0.06;
+    yMax = 0.19;
     
     inds = give_Me_Indices_To_Apply_Force(x,y,xMin,xMax,yMin,yMax);
     first = 0;
@@ -58,6 +84,8 @@ end
 % Compute Total External Forces
 Fx = fx;
 Fy = fy;
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -119,6 +147,7 @@ for i=1:length(iX_Vec)
         n = n+1; 
     end
 end
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -183,7 +212,9 @@ function [uX_Tar,uY_Tar] = please_Give_Target_Velocity(t,dx,dy,xGrid,yGrid,Lx,Ly
 
 y = yGrid(j);  % y-Value considered
 
-uX_Tar = -Umax * (5*tanh(t)) * ( (Ly/2+w/2) - ( y ) )*( (Ly/2-w/2) - ( y ) ); % Only external forces in x-direction
+%uX_Tar = -Umax * (5*tanh(t)) * ( (Lx/2+w/2) - y )*( (Lx/2-w/2) - y ); % Only external forces in x-direction
+uX_Tar = -Umax * (5* ( sin(2*10*pi*t) ) * ( (Ly/2+w/2) - y )*( (Ly/2-w/2) - y ) ); % Only external forces in x-direction
+
 uY_Tar = 0;                                                           % No external forces in y-direction
 
 

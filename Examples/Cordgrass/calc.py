@@ -1,56 +1,75 @@
-import os
 import glob
-import numpy as np
+import os
+import csv
 
-def is_numeric_line(line):
-    return all(item.replace("e", "").replace("+", "").replace("-", "").replace(".", "").isdigit() for item in line.split())
+def process_vtk_file(filename):
+    with open(filename, 'r') as file:
+        lines = file.readlines()
 
-def process_vtk_files(folder_path):
-    file_pattern = os.path.join(folder_path, 'uX.????.vtk')
-    vtk_files = sorted(glob.glob(file_pattern))
+    # Find the line containing "SCALARS uY double"
+    start_idx = -1
+    for i, line in enumerate(lines):
+        if "SCALARS uX double" in line:
+            start_idx = i + 2  # Data starts two lines after this
+            break
 
-    results = []
+    if start_idx == -1:
+        print(f"SCALARS uX double not found in {filename}")
+        return None
 
-    for file_path in vtk_files:
-        with open(file_path, 'r') as file:
-            data_started = False
-            averages = []
+    # Extract data from the file
+    data_lines = lines[start_idx:]
 
-            for line in file:
-                line = line.strip()
-                if not data_started:
-                    if line.startswith("LOOKUP_TABLE default"):
-                        data_started = True
-                    continue
+    # Process each line to sum the last 45% and calculate the average
+    total_sum = 0
+    total_count = 0
 
-                if is_numeric_line(line):
-                    numbers = [float(x) for x in line.split()]
-                    if numbers:
-                        last_quarter = numbers[int(3*len(numbers)/4):]
-                        avg = sum(last_quarter) / len(last_quarter)
-                        averages.append(avg)
+    for line in data_lines:
+        values = list(map(float, line.split()))
+        num_values = len(values)
+        start_index = int(num_values * 0.55)  # Start from 55% to get the last 45% 0.55 instead of 0
 
-            if averages:
-                file_avg = sum(averages) / len(averages)
-                results.append((os.path.basename(file_path), file_avg))
-            else:
-                print(f"Warning: No valid data found in {file_path}")
+        partial_sum = sum(values[start_index:])
+        partial_count = num_values - start_index
 
-    return results
+        total_sum += partial_sum
+        total_count += partial_count
 
-def main():
-    folder_path = 'littletrials/control'
-    results = process_vtk_files(folder_path)
-
-    if results:
-        print("File Averages:")
-        # for file_name, avg in results:
-            # print(f"{file_name}: {avg:.6e}")
-
-        overall_avg = sum(avg for _, avg in results) / len(results)
-        print(f"\nOverall Average: {overall_avg:.6e}")
+    if total_count > 0:
+        average = total_sum / total_count
+        # print(f"{filename}: Average of last 45% = {average:.6f}")
+        return average
     else:
-        print("No valid results found.")
+        # print(f"{filename}: No data to process.")
+        return None
 
-if __name__ == "__main__":
-    main()
+# Set the directory path
+directory_path = "trials/14"
+
+# List to hold the filename and its corresponding average
+file_averages = []
+ 
+# Process all files matching the pattern uX.????.vtk in the specified directory
+for filename in glob.glob(os.path.join(directory_path, "uX.[0-1][0-9][0-9][0-9].vtk")):
+    #print(f"Processing {filename}...")
+    file_average = process_vtk_file(filename)
+    if file_average is not None:
+        # Extract the number from the filename (e.g., '0001' from 'uX.0001.vtk')
+        file_number = os.path.splitext(os.path.basename(filename))[0].split('.')[1]
+        file_averages.append((file_number, file_average))
+
+# Calculate the overall average of all file averages
+if file_averages:
+    overall_average = sum([avg for _, avg in file_averages]) / len(file_averages)
+    print(f"Overall Average of all file averages = {overall_average:.8f}")
+
+    # Export to a CSV file
+    csv_filename = "file_averages.csv"
+    with open(csv_filename, 'w', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow(["File Number", "Average"])  # Header row
+        csvwriter.writerows(file_averages)  # Data rows
+
+    #print(f"File averages saved to {csv_filename}.")
+else:
+    print("No valid file averages to process.")
